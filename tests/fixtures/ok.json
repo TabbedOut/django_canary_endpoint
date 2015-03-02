@@ -1,0 +1,38 @@
+{
+  "status": "ok",
+  "version": "1.2.3",
+  "name": "example",
+  "resources": {
+    "foo": {
+      "status": "ok",
+      "description": "http://foo/",
+      "latency": 0.0
+    },
+    "bar": {
+      "status": "ok",
+      "result": {
+        "status": "ok"
+      },
+      "description": "http://foo/_status/",
+      "latency": 0.0
+    },
+    "rq": {
+      "status": "ok",
+      "queues": {
+        "default": {
+          "url": "redis://localhost:6379/0/",
+          "n_jobs": 0,
+          "n_workers": 0
+        }
+      },
+      "description": "Django RQ",
+      "latency": 0.0
+    },
+    "database": {
+      "status": "ok",
+      "description": "Database \"default\" at django.db.backends.sqlite3:///:memory:",
+      "latency": 0.0
+    }
+  },
+  "latency": 0.0
+}

@@ -1,0 +1,13 @@
+[run]
+branch = True
+
+[report]
+include =
+    canary_endpoint/*
+    tests/*
+
+[html]
+directory = coverage
+
+[xml]
+output = coverage/coverage.xml

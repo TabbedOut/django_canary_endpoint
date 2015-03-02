@@ -1,0 +1,6 @@
+{
+  "phabricator.uri" : "https://phab.tabbedout.com/",
+  "project.name" : "django_canary_endpoint",
+  "lint.engine" : "TabbedOutLintEngine",
+  "unit.engine" : "NoseCovUnitTestEngine"
+}
