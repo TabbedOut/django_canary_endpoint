@@ -1,7 +1,8 @@
 Django Canary Endpoint
 ======================
 
-Provides [canary endpoints](http://byterot.blogspot.com/2014/11/health-endpoint-in-api-design-slippery-rest-api-design-canary-endpoint-hysterix-asp-net-web-api.html) for common Django dependencies.
+Provides [canary endpoints](http://byterot.blogspot.com/2014/11/health-endpoint-in-api-design-slippery-rest-api-design-canary-endpoint-hysterix-asp-net-web-api.html)
+for common Django dependencies.
 
 
 ### Installation
@@ -32,9 +33,9 @@ canary = GitCanary('example', root=ROOT, version=VERSION, resources=[
 ######
 
 from canary_endpoint.views import status
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns, url
 
-urlpatterns = patterns('', (r'^_status/$', status, {'canary': canary}))
+urlpatterns = patterns('', url(r'^_status/$', status, {'canary': canary}))
 ```
 
 See the [example project](./tests/projects/example.py) for full configuration.
@@ -46,6 +47,11 @@ Also see the [example response data](./tests/fixtures/ok.json).
 
     make test
     open coverage/index.html
+
+For more thorough multi-Django version testing, (`arc lint` will not run this)
+use:
+
+    tox
 
 
 ### License

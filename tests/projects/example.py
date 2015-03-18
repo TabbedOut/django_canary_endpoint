@@ -70,6 +70,6 @@ canary = Canary('example', root=ROOT, version=VERSION, resources=[
 ######
 
 from canary_endpoint.views import status
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns, url
 
-urlpatterns = patterns('', (r'^_status/$', status, {'canary': canary}))
+urlpatterns = patterns('', url(r'^_status/$', status, {'canary': canary}))
