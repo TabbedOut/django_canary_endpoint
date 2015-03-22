@@ -11,6 +11,14 @@ from canary_endpoint.mocks import (
     MockRQMixin
 )
 
+try:
+    # If the app cache is not explicitly loaded before running the tests,
+    # errors will be squashed by template errors in Django 1.7 and later.
+    import django
+    django.setup()
+except AttributeError:
+    pass
+
 
 class MockTestCase(MockTimeMixin,
                    MockDatabaseMixin,

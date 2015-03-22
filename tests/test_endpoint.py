@@ -1,9 +1,5 @@
 import json
 
-from django import db
-from django.http import HttpResponseServerError
-from mock import patch
-
 from . import MockTestCase
 
 
@@ -90,13 +86,3 @@ class EndpointTestCase(MockTestCase):
         expected_data = dict(rq_data, status='warning')
         overrides = {'rq': expected_data}
         self.assert_content(response.content, status='warning', **overrides)
-
-    @patch('canary_endpoint.views.HttpResponse')
-    def test_status_endpoint_returns_500_on_error(self, mock_response):
-        def on_500(*args, **kwargs):
-            db._rollback_on_exception()
-            return HttpResponseServerError()
-
-        mock_response.side_effect = on_500
-        response = self.client.get('/_status/')
-        self.assertEqual(response.status_code, 500)
