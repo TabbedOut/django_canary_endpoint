@@ -45,9 +45,9 @@ RQ_QUEUES = {
 # Services
 ##########
 
-HTTP_ENDPOINT = 'http://foo/'
+HTTP_ENDPOINT = 'http://service/'
 
-HTTP_ENDPOINT_WITH_CANARY = 'http://foo/_status/'
+HTTP_ENDPOINT_WITH_CANARY = 'http://service/_status/'
 
 
 # Canary
@@ -56,11 +56,13 @@ HTTP_ENDPOINT_WITH_CANARY = 'http://foo/_status/'
 from canary_endpoint import Canary
 from canary_endpoint.resources.databases import DjangoDatabase
 from canary_endpoint.resources.rq import DjangoRQ
+from canary_endpoint.resources.search import ElasticSearch
 from canary_endpoint.resources.services import Service, ServiceWithCanary
 
 canary = Canary('example', root=ROOT, version=VERSION, resources=[
     DjangoDatabase(statements=['SELECT 1 FROM foo;']),
     DjangoRQ(),
+    ElasticSearch('es_resource', host='http://elasticsearch.example:9200'),
     Service('foo', url=HTTP_ENDPOINT),
     ServiceWithCanary('bar', url=HTTP_ENDPOINT_WITH_CANARY),
 ])

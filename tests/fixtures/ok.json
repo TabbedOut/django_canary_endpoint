@@ -5,7 +5,7 @@
   "resources": {
     "foo": {
       "status": "ok",
-      "description": "http://foo/",
+      "description": "http://service/",
       "latency": 0.0
     },
     "bar": {
@@ -13,8 +13,13 @@
       "result": {
         "status": "ok"
       },
-      "description": "http://foo/_status/",
+      "description": "http://service/_status/",
       "latency": 0.0
+    },
+    "es_resource": {
+      "status": "ok",
+      "latency": 0.0,
+      "description": "http://elasticsearch.example:9200"
     },
     "rq": {
       "status": "ok",

@@ -1,12 +1,17 @@
 import json
 
+from requests.exceptions import HTTPError
+
 from . import MockTestCase
 
 
 class EndpointTestCase(MockTestCase):
+    # maxDiff = None  # DEBUG uncomment for untruncated assertion output
+
     def setUp(self):
         super(EndpointTestCase, self).setUp()
-        self.mock_ok_response({'status': 'ok'})
+        self.mock_ok_service({'status': 'ok'})
+        self.mock_ok_elasticsearch()
         self.mock_queue('default')
         self.expected_data = self.get_fixture('ok.json')
 
@@ -15,6 +20,7 @@ class EndpointTestCase(MockTestCase):
         expected_data = self.expected_data.copy()
         expected_data['status'] = status
         expected_data['resources'].update(**overrides)
+        # print data; print '*' * 80; print expected_data  # DEBUG
         self.assertEqual(data, expected_data)
 
     # Assertions
@@ -23,6 +29,7 @@ class EndpointTestCase(MockTestCase):
     def test_status_endpoint_returns_200_on_success(self):
         response = self.client.get('/_status/')
         self.assertEqual(response.status_code, 200)
+        # print response.content  # DEBUG uncomment when updating ok.json
         self.assert_content(response.content)
 
     def test_status_endpoint_returns_200_with_warning_on_timeout(self):
@@ -31,14 +38,18 @@ class EndpointTestCase(MockTestCase):
         response = self.client.get('/_status/')
         self.assertEqual(response.status_code, 200)
 
-        self.expected_data['latency'] = 4.0
+        n_resources = len(self.expected_data['resources'])
+        self.expected_data['latency'] = 1.0 * n_resources
         for resource in self.expected_data['resources'].values():
             resource.update(status='warning', latency=1.0)
 
         self.assert_content(response.content, status='warning')
 
     def test_status_endpoint_returns_503_on_http_error(self):
-        self.mock_error_response({'status': 'warning'})
+        # redo requests mocks
+        self.reset_responses()
+        self.mock_ok_elasticsearch()
+        self.mock_error_service({'status': 'warning'})
 
         response = self.client.get('/_status/')
         self.assertEqual(response.status_code, 503)
@@ -73,6 +84,20 @@ class EndpointTestCase(MockTestCase):
         rq_data = self.expected_data['resources']['rq'].copy()
         expected_data = dict(rq_data, status='error', error=message, queues={})
         overrides = {'rq': expected_data}
+        self.assert_content(response.content, status='error', **overrides)
+
+    def test_status_endpoint_returns_503_on_elasticsearch_error(self):
+        # redo requests mocks
+        self.reset_responses()
+        self.mock_ok_service({'status': 'ok'})
+        self.mock_error_elasticsearch(body=HTTPError('Some ES error'))
+
+        response = self.client.get('/_status/')
+        self.assertEqual(response.status_code, 503)
+
+        es_data = self.expected_data['resources']['es_resource'].copy()
+        expected_data = dict(es_data, status='error', error='Some ES error')
+        overrides = {'es_resource': expected_data}
         self.assert_content(response.content, status='error', **overrides)
 
     def test_status_endpoint_returns_200_with_warning_on_rq_contention(self):

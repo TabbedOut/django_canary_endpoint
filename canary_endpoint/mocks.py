@@ -1,9 +1,9 @@
-from StringIO import StringIO
 from subprocess import CalledProcessError
 import json
+import re
 
 from mock import patch, Mock
-from requests import Response
+import responses
 
 
 class MockMixin(object):
@@ -67,28 +67,47 @@ class MockDatabaseMixin(MockMixin):
         self.mock_execute.side_effect = DatabaseError(message)
 
 
-class MockServiceMixin(MockMixin):
-    def patch(self):
-        super(MockServiceMixin, self).patch()
-        self.get_patcher = patch('requests.get')
-        self.mock_get = self.get_patcher.start()
+class MockRequestsMixin(object):
+    """If you need to mock `requests` GET requests in your Canary tests."""
+    elasticsearch_urls = re.compile(r'https?://elasticsearch.*')
+    service_urls = re.compile(r'http://service.*')
 
-    def unpatch(self):
-        self.get_patcher.stop()
-        super(MockServiceMixin, self).unpatch()
+    def setUp(self):
+        super(MockRequestsMixin, self).setUp()
+        responses.start()
 
-    def mock_ok_response(self, data=None):
-        return self.mock_response(status_code=200, data=data)
+    def tearDown(self):
+        responses.stop()
+        responses.reset()
+        super(MockRequestsMixin, self).tearDown()
 
-    def mock_error_response(self, data=None):
-        return self.mock_response(status_code=500, data=data)
+    def reset_responses(self):
+        responses.reset()
 
-    def mock_response(self, status_code, data=None):
-        response = Response()
-        content = json.dumps(data) if data else ''
-        response.raw = StringIO(content)
-        response.status_code = status_code
-        self.mock_get.return_value = Mock(wraps=response)
+    def mock_ok_service(self, data=None):
+        self.mock_service_response(status_code=200, data=data)
+
+    def mock_error_service(self, data=None):
+        self.mock_service_response(status_code=500, data=data)
+
+    def mock_service_response(self, status_code, data=None):
+        responses.add(
+            responses.GET, self.service_urls,
+            body=json.dumps(data) if data else '',
+            status=status_code,
+            content_type='application/json')
+
+    def mock_ok_elasticsearch(self):
+        responses.add(
+            responses.GET, self.elasticsearch_urls,
+            body='{"status": "green"}',
+            content_type='application/json')
+
+    def mock_error_elasticsearch(self, body='{"status": "red"}'):
+        responses.add(
+            responses.GET, self.elasticsearch_urls,
+            body=body,
+            content_type='application/json')
 
 
 class MockRQMixin(MockMixin):
