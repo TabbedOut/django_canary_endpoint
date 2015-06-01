@@ -1,9 +1,10 @@
 from .constants import OK, WARNING, ERROR
 from .decorators import timed
+from .prometheus import PrometheusCanaryMixin
 from .resources.projects import Project, GitProject
 
 
-class Canary(object):
+class Canary(PrometheusCanaryMixin, object):
     """
     Reports the status of a project and its dependencies.
     """
@@ -12,6 +13,7 @@ class Canary(object):
     def __init__(self, name, version=None, root=None, resources=None):
         self.project = self.project_class(name, version=version, root=root)
         self.resources = resources or []
+        super(Canary, self).__init__(name, version, root, resources)
 
     @timed
     def check(self):

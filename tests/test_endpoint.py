@@ -1,5 +1,7 @@
 import json
+import unittest
 
+from canary_endpoint.prometheus import PROMETHEUS_AVAILABLE
 from requests.exceptions import HTTPError
 
 from . import MockTestCase
@@ -31,6 +33,12 @@ class EndpointTestCase(MockTestCase):
         self.assertEqual(response.status_code, 200)
         # print response.content  # DEBUG uncomment when updating ok.json
         self.assert_content(response.content)
+
+    @unittest.skipIf(not PROMETHEUS_AVAILABLE, 'requires prometheus client')
+    def test_status_endpoint_returns_prometheus_response(self):
+        response = self.client.get('/_status/', {'format': 'prometheus'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('example{resource="database"} 0.0', response.content)
 
     def test_status_endpoint_returns_200_with_warning_on_timeout(self):
         self.mock_duration(step=1.0)
@@ -99,6 +107,16 @@ class EndpointTestCase(MockTestCase):
         expected_data = dict(es_data, status='error', error='Some ES error')
         overrides = {'es_resource': expected_data}
         self.assert_content(response.content, status='error', **overrides)
+
+    @unittest.skipIf(not PROMETHEUS_AVAILABLE, 'requires prometheus client')
+    def test_status_endpoint_returns_prometheus_response_with_db_error(self):
+        message = 'mock error'
+        self.mock_database_error(message=message)
+
+        response = self.client.get('/_status/', {'format': 'prometheus'})
+        self.assertEqual(response.status_code, 200)
+        # Since a latency was reported, re-report it back out
+        self.assertIn('example{resource="database"} 0.0', response.content)
 
     def test_status_endpoint_returns_200_with_warning_on_rq_contention(self):
         self.mock_queue('default', count=10)
