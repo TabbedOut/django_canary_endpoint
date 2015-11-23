@@ -39,6 +39,16 @@ RQ_QUEUES = {
         'DEFAULT_TIMEOUT': 360,
         'DB': 0,
     },
+    'low': {
+        'URL': 'redis://foo',
+        'DEFAULT_TIMEOUT': 360,
+        'DB': 0,
+    },
+    'high': {
+        'URL': 'redis://foo',
+        'DEFAULT_TIMEOUT': 360,
+        'DB': 0,
+    },
 }
 
 
@@ -61,7 +71,7 @@ from canary_endpoint.resources.services import Service, ServiceWithCanary
 
 canary = Canary('example', root=ROOT, version=VERSION, resources=[
     DjangoDatabase(statements=['SELECT 1 FROM foo;']),
-    DjangoRQ(),
+    DjangoRQ(queues=['default']),
     ElasticSearch('es_resource', host='http://elasticsearch.example:9200'),
     Service('foo', url=HTTP_ENDPOINT),
     ServiceWithCanary('bar', url=HTTP_ENDPOINT_WITH_CANARY),

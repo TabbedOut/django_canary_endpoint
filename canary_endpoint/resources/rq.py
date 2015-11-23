@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django_rq import queues
 from redis import RedisError
@@ -13,8 +14,17 @@ from . import Resource
 class DjangoRQ(Resource):
     """
     Checks the status of any RQ queues configured by Django.
+
+    All queues must share the same Redis connection.
     """
-    def __init__(self, name='rq', description='Django RQ', **kwargs):
+
+    def __init__(
+            self,
+            name='rq',
+            description='Django RQ',
+            queues=None,
+            **kwargs):
+        self.queue_names = queues or settings.RQ_QUEUES.keys()
         super(DjangoRQ, self).__init__(
             name=name,
             description=description,
@@ -27,7 +37,7 @@ class DjangoRQ(Resource):
         status = result.get('status', OK)
         try:
             result['queues'] = {}
-            for queue in queues.get_queues():
+            for queue in self.get_queues():
                 queue_result = self.check_queue(queue)
                 status = self.get_status_for_queue_result(status, queue_result)
                 result['queues'][queue.name] = queue_result
@@ -35,6 +45,9 @@ class DjangoRQ(Resource):
             return dict(result, status=status)
         except (ImproperlyConfigured, RedisError) as e:
             return dict(result, status=ERROR, error=str(e))
+
+    def get_queues(self):
+        return queues.get_queues(*self.queue_names)
 
     def check_queue(self, queue):
         n_jobs = queue.count

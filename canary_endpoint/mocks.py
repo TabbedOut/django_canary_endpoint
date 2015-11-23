@@ -111,18 +111,23 @@ class MockRequestsMixin(object):
 
 
 class MockRQMixin(MockMixin):
-    default_configuration = {'host': 'localhost', 'port': '6379', 'db': 0}
+
+    rq_default_configuration = {'host': 'localhost', 'port': '6379', 'db': 0}
 
     def patch(self):
         super(MockRQMixin, self).patch()
-        self.queues_patcher = patch('canary_endpoint.resources.rq.queues')
+        self.get_queue_patcher = patch(
+            'canary_endpoint.resources.rq.queues.get_queue',
+            autospec=True
+        )
         self.worker_patcher = patch('canary_endpoint.resources.rq.Worker')
-        self.mock_queues = self.queues_patcher.start()
+        self.mock_get_queue = self.get_queue_patcher.start()
+        self.mock_get_queue.side_effect = self.get_mock_queue
         self.mock_worker = self.worker_patcher.start()
-        self.mock_queues.get_queues.return_value = []
+        self.rq_queues = {}
 
     def unpatch(self):
-        self.mock_queues = self.queues_patcher.stop()
+        self.mock_get_queue = self.get_queue_patcher.stop()
         self.mock_worker = self.worker_patcher.stop()
         super(MockRQMixin, self).unpatch()
 
@@ -130,13 +135,16 @@ class MockRQMixin(MockMixin):
         mock_queue = Mock()
         mock_queue.name = name
         mock_queue.count = count
-        configuration = configuration or self.default_configuration
+        configuration = configuration or self.rq_default_configuration
         mock_queue.connection.connection_pool.connection_kwargs = configuration
-        self.mock_queues.get_queues.return_value = [mock_queue]
+        self.rq_queues[name] = mock_queue
+
+    def get_mock_queue(self, name, **kwargs):
+        return self.rq_queues[name]
 
     def mock_redis_error(self, message=None):
         from redis.exceptions import RedisError
-        self.mock_queues.get_queues.side_effect = RedisError(message)
+        self.mock_get_queue.side_effect = RedisError(message)
 
 
 class MockGitMixin(MockMixin):

@@ -19,8 +19,9 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     test_suite='tests',
     install_requires=[
-        'django-rq>=0.7.0',
-        'requests>=2.0.0',
+        'django-rq>=0.7.0,<1',
+        'requests>=2.0.0,<3',
+        'responses<1',
     ],
     classifiers=[
         'Environment :: Web Environment',
