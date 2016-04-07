@@ -9,10 +9,14 @@ for common Django dependencies.
 
     pip install django-canary-endpoint
 
+If you use RQ you also need to install the `rq` extra:
+
+    pip install django-canary-endpoint[rq]
+
 
 ### Quickstart
 
-```python
+```
 # Canary
 ########
 
@@ -48,8 +52,7 @@ Also see the [example response data](./tests/fixtures/ok.json).
     make test
     open coverage/index.html
 
-For more thorough multi-Django version testing, (`arc lint` will not run this)
-use:
+For more thorough multi-Django version testing use:
 
     tox
 
@@ -58,4 +61,4 @@ use:
 
 The MIT License (MIT)
 
-Copyright 2015 ATX Innovations
+Copyright 2016 ATX Innovations

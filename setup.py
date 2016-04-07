@@ -19,10 +19,12 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     test_suite='tests',
     install_requires=[
-        'django-rq>=0.7.0,<1',
         'requests>=2.0.0,<3',
         'responses<1',
     ],
+    extras_require={
+        'rq': ['django_rq<1'],
+    },
     classifiers=[
         'Environment :: Web Environment',
         'License :: OSI Approved :: MIT License',

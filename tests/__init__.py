@@ -8,7 +8,6 @@ from canary_endpoint.mocks import (
     MockTimeMixin,
     MockDatabaseMixin,
     MockRequestsMixin,
-    MockRQMixin,
 )
 
 try:
@@ -23,7 +22,6 @@ except AttributeError:
 class MockTestCase(MockTimeMixin,
                    MockDatabaseMixin,
                    MockRequestsMixin,
-                   MockRQMixin,
                    MockTestCaseMixin,
                    TestCase):
     """

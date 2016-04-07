@@ -21,18 +21,6 @@
       "latency": 0.0,
       "description": "http://elasticsearch.example:9200"
     },
-    "rq": {
-      "status": "ok",
-      "queues": {
-        "default": {
-          "url": "redis://localhost:6379/0/",
-          "n_jobs": 0,
-          "n_workers": 0
-        }
-      },
-      "description": "Django RQ",
-      "latency": 0.0
-    },
     "database": {
       "status": "ok",
       "description": "Database \"default\" at django.db.backends.sqlite3:///:memory:",

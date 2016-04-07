@@ -1,15 +1,26 @@
 from django.test import SimpleTestCase
 
 from canary_endpoint.mocks import MockTestCaseMixin, MockRQMixin
-from canary_endpoint.resources.rq import DjangoRQ
+from nose.plugins.attrib import attr
 
 
+@attr('rq')
 class DjangoRQTestCase(MockTestCaseMixin, MockRQMixin, SimpleTestCase):
+
+    # Helpers
+    #########
+
+    def get_resource(self, queues):
+        from canary_endpoint.resources.rq import DjangoRQ
+        return DjangoRQ(queues=queues)
+
+    # Assertions
+    ############
 
     def test_warns_when_number_of_jobs_exceeds_number_of_workers(self):
         self.mock_queue('default', count=1)
 
-        resource = DjangoRQ(queues=['default'])
+        resource = self.get_resource(queues=['default'])
         result = resource.check()
 
         self.assertEqual(result['status'], 'warning')
@@ -23,7 +34,7 @@ class DjangoRQTestCase(MockTestCaseMixin, MockRQMixin, SimpleTestCase):
         self.mock_queue('low', count=10)
         self.mock_queue('high', count=1)
 
-        resource = DjangoRQ(queues=['low', 'high'])
+        resource = self.get_resource(queues=['low', 'high'])
         result = resource.check()
 
         self.assertEqual(result['queues'], {

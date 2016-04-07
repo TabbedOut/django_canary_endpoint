@@ -12,7 +12,6 @@ class EndpointTestCase(MockTestCase):
         super(EndpointTestCase, self).setUp()
         self.mock_ok_service({'status': 'ok'})
         self.mock_ok_elasticsearch()
-        self.mock_queue('default')
         self.expected_data = self.get_fixture('ok.json')
 
     def assert_content(self, content, status='ok', **overrides):
@@ -75,18 +74,6 @@ class EndpointTestCase(MockTestCase):
         overrides = {'database': expected_data}
         self.assert_content(response.content, status='error', **overrides)
 
-    def test_status_endpoint_returns_503_on_redis_error(self):
-        message = 'mock error'
-        self.mock_redis_error(message)
-
-        response = self.client.get('/_status/')
-        self.assertEqual(response.status_code, 503)
-
-        rq_data = self.expected_data['resources']['rq'].copy()
-        expected_data = dict(rq_data, status='error', error=message, queues={})
-        overrides = {'rq': expected_data}
-        self.assert_content(response.content, status='error', **overrides)
-
     def test_status_endpoint_returns_503_on_elasticsearch_error(self):
         # redo requests mocks
         self.reset_responses()
@@ -100,15 +87,3 @@ class EndpointTestCase(MockTestCase):
         expected_data = dict(es_data, status='error', error='Some ES error')
         overrides = {'es_resource': expected_data}
         self.assert_content(response.content, status='error', **overrides)
-
-    def test_status_endpoint_returns_200_with_warning_on_rq_contention(self):
-        self.mock_queue('default', count=10)
-
-        response = self.client.get('/_status/')
-        self.assertEqual(response.status_code, 200)
-
-        rq_data = self.expected_data['resources']['rq'].copy()
-        rq_data['queues']['default']['n_jobs'] = 10
-        expected_data = dict(rq_data, status='warning')
-        overrides = {'rq': expected_data}
-        self.assert_content(response.content, status='warning', **overrides)
