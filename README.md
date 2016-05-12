@@ -49,6 +49,9 @@ Also see the [example response data](./tests/fixtures/ok.json).
 
 ### Testing
 
+The following commands should be run in a _virtualenv_.
+
+    pip install -r requirements.txt
     make test
     open coverage/index.html
 
