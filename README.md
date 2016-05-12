@@ -52,6 +52,7 @@ Also see the [example response data](./tests/fixtures/ok.json).
 The following commands should be run in a _virtualenv_.
 
     pip install -r requirements.txt
+    pip install "django<1.9" django-rq
     make test
     open coverage/index.html
 
