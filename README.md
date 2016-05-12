@@ -49,12 +49,42 @@ Also see the [example response data](./tests/fixtures/ok.json).
 
 ### Testing
 
-    make test
-    open coverage/index.html
+There are several ways to run the projects tests.  The recommended approach
+is to run `tox`, becuase your testing environment will be properly set-up.
 
-For more thorough multi-Django version testing use:
+For a thorough multi-Django version testing use:
 
-    tox
+    $ tox
+
+To list the configured environments:
+
+    $ tox -l
+    py27-django15
+    py27-django16
+    py27-django17
+    py27-django18
+    py27-djangorq
+    py35-django18
+
+You can execute a single test environment:
+
+    $ tox -e py35-django18
+
+If you manage your own environment, you can run the `make test` command
+yourself.  It is recommened that you do this in a _virtualenv_.
+
+    $ pip install -r requirements.txt     # Normally tox would install these
+    $ pip install "django<1.9" django-rq  # Normally tox would install these
+    $ make test
+    $ open coverage/index.html
+
+You can run a subset of tests by setting the `PACKAGES` variable:
+
+    $ make PACKAGES="tests.test_endpoint tests.test_service_resources"
+
+To run a single test:
+
+    $ make PACKAGES=tests.test_endpoint:EndpointTestCase.test_status_endpoint_returns_200_on_success
 
 
 ### License

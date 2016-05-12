@@ -14,12 +14,12 @@ class EndpointTestCase(MockTestCase):
         self.mock_ok_elasticsearch()
         self.expected_data = self.get_fixture('ok.json')
 
-    def assert_content(self, content, status='ok', **overrides):
-        data = json.loads(content)
+    def assert_response_content(self, response, status='ok', **overrides):
+        encoding = getattr(response, 'charset', 'utf-8')
+        data = json.loads(response.content.decode(encoding))
         expected_data = self.expected_data.copy()
         expected_data['status'] = status
         expected_data['resources'].update(**overrides)
-        # print data; print '*' * 80; print expected_data  # DEBUG
         self.assertEqual(data, expected_data)
 
     # Assertions
@@ -28,8 +28,7 @@ class EndpointTestCase(MockTestCase):
     def test_status_endpoint_returns_200_on_success(self):
         response = self.client.get('/_status/')
         self.assertEqual(response.status_code, 200)
-        # print response.content  # DEBUG uncomment when updating ok.json
-        self.assert_content(response.content)
+        self.assert_response_content(response)
 
     def test_status_endpoint_returns_200_with_warning_on_timeout(self):
         self.mock_duration(step=1.0)
@@ -42,7 +41,7 @@ class EndpointTestCase(MockTestCase):
         for resource in self.expected_data['resources'].values():
             resource.update(status='warning', latency=1.0)
 
-        self.assert_content(response.content, status='warning')
+        self.assert_response_content(response, status='warning')
 
     def test_status_endpoint_returns_503_on_http_error(self):
         # redo requests mocks
@@ -60,7 +59,7 @@ class EndpointTestCase(MockTestCase):
         bar_data = dict(resources['bar'], status=u'error', error=bar_error)
         bar_data['result']['status'] = u'warning'
         overrides = {'foo': foo_data, 'bar': bar_data}
-        self.assert_content(response.content, status=u'error', **overrides)
+        self.assert_response_content(response, status=u'error', **overrides)
 
     def test_status_endpoint_returns_503_on_database_error(self):
         message = 'mock error'
@@ -72,7 +71,7 @@ class EndpointTestCase(MockTestCase):
         database_data = self.expected_data['resources']['database'].copy()
         expected_data = dict(database_data, status='error', error=message)
         overrides = {'database': expected_data}
-        self.assert_content(response.content, status='error', **overrides)
+        self.assert_response_content(response, status='error', **overrides)
 
     def test_status_endpoint_returns_503_on_elasticsearch_error(self):
         # redo requests mocks
@@ -86,4 +85,4 @@ class EndpointTestCase(MockTestCase):
         es_data = self.expected_data['resources']['es_resource'].copy()
         expected_data = dict(es_data, status='error', error='Some ES error')
         overrides = {'es_resource': expected_data}
-        self.assert_content(response.content, status='error', **overrides)
+        self.assert_response_content(response, status='error', **overrides)

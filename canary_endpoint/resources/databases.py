@@ -31,7 +31,7 @@ class Database(Resource):
         result = super(Database, self).check()
         try:
             cursor = self.connection.cursor()
-            map(cursor.execute, self.statements)
+            [cursor.execute(sql) for sql in self.statements]
             return dict(result, status=OK)
         except (DatabaseError, MySQLError) as e:
             return dict(result, status=ERROR, error=str(e))
