@@ -1,4 +1,9 @@
 import requests
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    class JSONDecodeError(ValueError):
+        pass
 
 from ..constants import OK, WARNING, ERROR
 from ..decorators import timed
@@ -57,5 +62,8 @@ class ServiceWithCanary(Service):
             elif service_status == ERROR:
                 status = ERROR
             return dict(result, status=status, result=service_result)
+        except JSONDecodeError:
+            error_message = 'No JSON object could be decoded'
+            return dict(result, status=ERROR, result=None, error=error_message)
         except (AttributeError, ValueError) as e:
             return dict(result, status=ERROR, result=None, error=str(e))
