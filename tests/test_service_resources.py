@@ -40,12 +40,7 @@ class ServiceWithCanaryTestCase(MockRequestsMixin,
 
     def test_invalid_json_reports_error_on_success(self):
         self.mock_ok_service(data=None)
-        json_decoding_error_messages = {
-            'python2_error': 'No JSON object could be decoded',
-            'python3_error': 'Expecting value: line 1 column 1 (char 0)',
-        }
-
         result = self.service.check()
         self.assertEqual(result['status'], ERROR)
         self.assertEqual(result['result'], None)
-        self.assertIn(result['error'], json_decoding_error_messages.values())
+        self.assertEqual(result['error'], 'No JSON object could be decoded')
