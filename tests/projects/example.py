@@ -16,6 +16,8 @@ ROOT_URLCONF = 'tests.projects.example'
 
 SECRET_KEY = 'foo'
 
+ALLOWED_HOSTS = ['testserver']
+
 
 # Databases
 ###########
