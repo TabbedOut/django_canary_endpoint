@@ -15,11 +15,10 @@ class EndpointTestCase(MockTestCase):
         self.expected_data = self.get_fixture('ok.json')
 
     def assert_content(self, content, status='ok', **overrides):
-        data = json.loads(content)
+        data = json.loads(content.decode('utf-8'))
         expected_data = self.expected_data.copy()
         expected_data['status'] = status
         expected_data['resources'].update(**overrides)
-        # print data; print '*' * 80; print expected_data  # DEBUG
         self.assertEqual(data, expected_data)
 
     # Assertions
@@ -28,7 +27,6 @@ class EndpointTestCase(MockTestCase):
     def test_status_endpoint_returns_200_on_success(self):
         response = self.client.get('/_status/')
         self.assertEqual(response.status_code, 200)
-        # print response.content  # DEBUG uncomment when updating ok.json
         self.assert_content(response.content)
 
     def test_status_endpoint_returns_200_with_warning_on_timeout(self):
