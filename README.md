@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/TabbedOut/django_canary_endpoint.svg?branch=master)](https://travis-ci.org/TabbedOut/django_canary_endpoint)
+
 Django Canary Endpoint
 ======================
 
